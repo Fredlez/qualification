@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT Agent - Text Generation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group label {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"],
+        input[type="number"] {
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="range"] {
+            cursor: pointer;
+        }
+
+        input[type="range"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .value-display {
+            font-size: 0.85em;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output-section {
+            display: none;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .output-section.show {
+            display: block;
+        }
+
+        .output-label {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .output-box {
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .prompt-box {
+            border-left: 4px solid #667eea;
+        }
+
+        .generated-box {
+            border-left: 4px solid #764ba2;
+        }
+
+        .output-text {
+            color: #333;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffebee;
+            border: 2px solid #ef5350;
+            border-radius: 8px;
+            padding: 15px;
+            color: #c62828;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            color: #1565c0;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 GPT Agent</h1>
+            <p class="subtitle">Generate text with your trained model</p>
+        </header>
+
+        <div class="info">
+            ℹ️ Enter a prompt and adjust the parameters to control text generation. The model will continue your prompt based on its training.
+        </div>
+
+        <form id="generationForm">
+            <div class="form-section">
+                <label for="prompt">Prompt</label>
+                <textarea id="prompt" name="prompt" placeholder="Enter your prompt here... e.g., 'To be, or not to be'"></textarea>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label for="maxTokens">Max Tokens</label>
+                    <input type="range" id="maxTokens" name="maxTokens" min="10" max="200" value="50">
+                    <div class="value-display" id="maxTokensValue">50</div>
+                </div>
+
+                <div class="control-group">
+                    <label for="temperature">Temperature</label>
+                    <input type="range" id="temperature" name="temperature" min="0" max="2" step="0.1" value="0.8">
+                    <div class="value-display" id="temperatureValue">0.8</div>
+                </div>
+
+                <div class="control-group">
+                    <label for="topK">Top K</label>
+                    <input type="range" id="topK" name="topK" min="1" max="50" value="10">
+                    <div class="value-display" id="topKValue">10</div>
+                </div>
+            </div>
+
+            <button type="submit">Generate Text</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #667eea;">Generating...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="output-section" id="outputSection">
+            <div class="output-label">📝 Your Prompt</div>
+            <div class="output-box prompt-box">
+                <div class="output-text" id="promptOutput"></div>
+            </div>
+
+            <div class="output-label">✨ Generated Text</div>
+            <div class="output-box generated-box">
+                <div class="output-text" id="generatedOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update slider value displays
+        document.getElementById('maxTokens').addEventListener('input', (e) => {
+            document.getElementById('maxTokensValue').textContent = e.target.value;
+        });
+
+        document.getElementById('temperature').addEventListener('input', (e) => {
+            document.getElementById('temperatureValue').textContent = e.target.value;
+        });
+
+        document.getElementById('topK').addEventListener('input', (e) => {
+            document.getElementById('topKValue').textContent = e.target.value;
+        });
+
+        // Form submission
+        document.getElementById('generationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const prompt = document.getElementById('prompt').value;
+            const maxTokens = parseInt(document.getElementById('maxTokens').value);
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const topK = parseInt(document.getElementById('topK').value);
+
+            if (!prompt.trim()) {
+                showError('Please enter a prompt');
+                return;
+            }
+
+            // Show loading, hide error
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('error').classList.remove('show');
+            document.getElementById('outputSection').classList.remove('show');
+            document.querySelector('button').disabled = true;
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        max_tokens: maxTokens,
+                        temperature: temperature,
+                        top_k: topK
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Generation failed');
+                }
+
+                // Display results
+                document.getElementById('promptOutput').textContent = data.prompt;
+                document.getElementById('generatedOutput').textContent = data.generated;
+                document.getElementById('outputSection').classList.add('show');
+
+            } catch (error) {
+                showError(error.message || 'An error occurred');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.querySelector('button').disabled = false;
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = '❌ ' + message;
+            errorDiv.classList.add('show');
+        }
+    </script>
+</body>
+</html>
