@@ -35,7 +35,7 @@ class SimpleTokenizer:
         return new_ids
     
     def train(self, text: str, verbose: bool = False):
-        # Initialize vocab with characters
+        # Initialize vocabulary with characters
         vocab = {i: chr(i) for i in range(256)}
         ids = list(text.encode('utf-8'))
         
@@ -49,7 +49,7 @@ class SimpleTokenizer:
             self.next_id += 1
             ids = self.merge(ids, pair, new_id)
             vocab[new_id] = vocab[pair[0]] + vocab[pair[1]]
-            self.merges[pair] = new_id  # Store as dict
+            self.merges[pair] = new_id  # Store as dict for O(1) lookup
             
             if verbose and i % 100 == 0:
                 print(f"Merge {i}/{num_merges}: {pair} -> {new_id}")
@@ -62,7 +62,7 @@ class SimpleTokenizer:
             stats = self.get_stats(ids)
             if not stats:
                 break
-            # Find the pair with the lowest merge ID (most recent merge)
+            # Find the pair with the lowest merge ID
             pair = min(stats.keys(), key=lambda p: self.merges.get(p, float('inf')))
             if pair not in self.merges:
                 break

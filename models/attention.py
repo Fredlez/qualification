@@ -30,15 +30,14 @@ class SelfAttention(nn.Module):
         Returns:
             Output tensor of shape (batch_size, seq_len, d_model)
         """
-        # Compute Q, K, V
-        Q = self.W_q(x)  # (batch_size, seq_len, d_model)
-        K = self.W_k(x)  # (batch_size, seq_len, d_model)
-        V = self.W_v(x)  # (batch_size, seq_len, d_model)
+        Q = self.W_q(x)
+        K = self.W_k(x)
+        V = self.W_v(x)
         
         # Compute attention scores
         scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.d_model)
         
-        # Apply mask if provided (for causal attention)
+        # Apply mask if provided for causal attention
         if mask is not None:
             scores = scores.masked_fill(mask == 0, float('-inf'))
         
@@ -63,7 +62,6 @@ class MultiHeadAttention(nn.Module):
         self.num_heads = num_heads
         self.d_k = d_model // num_heads  # Dimension per head
         
-        # Linear projections for Q, K, V
         self.W_q = nn.Linear(d_model, d_model, bias=False)
         self.W_k = nn.Linear(d_model, d_model, bias=False)
         self.W_v = nn.Linear(d_model, d_model, bias=False)
@@ -89,7 +87,7 @@ class MultiHeadAttention(nn.Module):
         batch_size = x.size(0)
         
         # Linear projections and split into heads
-        Q = self.split_heads(self.W_q(x))  # (batch_size, num_heads, seq_len, d_k)
+        Q = self.split_heads(self.W_q(x))
         K = self.split_heads(self.W_k(x))
         V = self.split_heads(self.W_v(x))
         
@@ -124,7 +122,7 @@ class CausalSelfAttention(nn.Module):
         super().__init__()
         self.mha = MultiHeadAttention(d_model, num_heads, dropout)
         
-        # Register causal mask as a buffer (not a parameter)
+        # Register causal mask as a buffer to make it so it doen't get treated as a parameter
         self.register_buffer(
             "causal_mask",
             torch.tril(torch.ones(max_seq_len, max_seq_len)).view(

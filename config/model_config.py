@@ -8,11 +8,11 @@ from dataclasses import dataclass
 @dataclass
 class ModelConfig:
     """Configuration for GPT model architecture."""
-    vocab_size: int = 50257  # GPT-2 vocab size
+    vocab_size: int = 50257  # Word ammount
     d_model: int = 768       # Embedding dimension
     num_heads: int = 12      # Number of attention heads
     num_layers: int = 12     # Number of transformer blocks
-    d_ff: int = 3072         # Feed-forward dimension (typically 4 * d_model)
+    d_ff: int = 3072         # Feed-forward dimension
     max_seq_len: int = 1024  # Maximum sequence length
     dropout: float = 0.1     # Dropout rate
 
@@ -25,8 +25,8 @@ class TrainingConfig:
     learning_rate: float = 3e-4  # Learning rate
     max_iters: int = 100         # Maximum training iterations
     eval_interval: int = 1       # Evaluation frequency
-    eval_iters: int = 5          # Number of iterations for evaluation
-    device: str = "cuda"         # Device to train on
+    eval_iters: int = 5          # How many times to evalueate iterations during training
+    device: str = "cuda"         # Trainis on GPU
     
 
 # Small model for testing

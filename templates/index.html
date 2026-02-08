@@ -255,18 +255,18 @@
 <body>
     <div class="container">
         <header>
-            <h1>🤖 GPT Agent</h1>
-            <p class="subtitle">Generate text with your trained model</p>
+            <h1>GPT Agent</h1>
+            <p class="subtitle">Generate a response with your current agent</p>
         </header>
 
         <div class="info">
-            ℹ️ Enter a prompt and adjust the parameters to control text generation. The model will continue your prompt based on its training.
+        Enter a prompt and adjust the parameters to control text generation. The model will continue your prompt based on its training.
         </div>
 
         <form id="generationForm">
             <div class="form-section">
                 <label for="prompt">Prompt</label>
-                <textarea id="prompt" name="prompt" placeholder="Enter your prompt here... e.g., 'To be, or not to be'"></textarea>
+                <textarea id="prompt" name="prompt" placeholder="Enter your prompt here"></textarea>
             </div>
 
             <div class="controls">
@@ -313,7 +313,6 @@
     </div>
 
     <script>
-        // Update slider value displays
         document.getElementById('maxTokens').addEventListener('input', (e) => {
             document.getElementById('maxTokensValue').textContent = e.target.value;
         });
@@ -381,7 +380,7 @@
 
         function showError(message) {
             const errorDiv = document.getElementById('error');
-            errorDiv.textContent = '❌ ' + message;
+            errorDiv.textContent = 'X ' + message;
             errorDiv.classList.add('show');
         }
     </script>

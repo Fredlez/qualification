@@ -42,22 +42,22 @@ def main():
     }
     
     print("Step 1: Loading training data from HuggingFace...")
-    # Load a small dataset (wikitext is good for testing)
+    # Load a small dataset for training
     dataset = load_dataset("wikitext", "wikitext-2-v1", split="train[:5%]")
     sample_text = "\n".join(dataset["text"][:1000])
     
     print("Step 2: Loading or training tokenizer...")
     tokenizer_file = Path('tokenizer.pkl')
     if tokenizer_file.exists():
-        # Load existing tokenizer
+        # Load the currently existing tokenizer
         with open(tokenizer_file, 'rb') as f:
             tokenizer = pickle.load(f)
         print("Loaded existing tokenizer")
     else:
-        # Train new tokenizer
+        # Train a new tokenizer with the sample text
         tokenizer = SimpleTokenizer(vocab_size=512)
         tokenizer.train(sample_text, verbose=True)
-        # Save tokenizer for future sessions
+        # Save tokenizer for future training
         with open(tokenizer_file, 'wb') as f:
             pickle.dump(tokenizer, f)
         print("Tokenizer trained and saved")
@@ -66,13 +66,13 @@ def main():
     token_ids = tokenizer.encode(sample_text)
     print(f"Total tokens: {len(token_ids)}")
     
-    # Split into train and validation
+    # Split it into training and validations
     split_idx = int(0.9 * len(token_ids))
     train_ids = token_ids[:split_idx]
     val_ids = token_ids[split_idx:]
     
     print("\nStep 4: Creating dataloaders...")
-    # Create dataloaders
+    # Creates dataloaders
     train_config = TrainingConfig()
     train_dataloader = create_dataloader(
         train_ids,
@@ -87,7 +87,7 @@ def main():
     )
     
     print("\nStep 5: Initializing model...")
-    # Initialize model with small config
+    # Initialize the model with its config
     model_config = SmallModelConfig()
     model_config.vocab_size = len(tokenizer.vocab)
     model_config.max_seq_len = train_config.block_size
@@ -104,7 +104,7 @@ def main():
     
     print(f"Model parameters: {sum(p.numel() for p in model.parameters()) / 1e6:.2f}M")
     
-    # Load checkpoint if it exists
+    # Load the most recent checkpoint if it exists so it can continue training
     checkpoint_file = Path('model_checkpoint.pt')
     optimizer_file = Path('optimizer_checkpoint.pt')
     
@@ -134,7 +134,7 @@ def main():
         eval_iters=train_config.eval_iters
     )
     
-    # Load optimizer state if available
+    # Load the optimizer state if it is available so the training can continue
     try:
         if optimizer_file.exists():
             optimizer_checkpoint = torch.load(optimizer_file)
@@ -149,17 +149,17 @@ def main():
     current_session["final_loss"] = loss_history[-1] if loss_history else None
     
     print("\nStep 7: Saving model, optimizer, and training data...")
-    # Save model state and optimizer state
+    # Save the checkpoint at the end of training so it can be loaded in future training sessions
     torch.save({
         'model_state_dict': model.state_dict(),
         'vocab_size': model_config.vocab_size,
         'config': model_config.__dict__
     }, 'model_checkpoint.pt')
     
-    # Save optimizer state for seamless continuation
+    # Save optimizer state so it can continue seamlessly
     torch.save(trainer.optimizer.state_dict(), 'optimizer_checkpoint.pt')
     
-    # Save tokenizer
+    # Save the current tokenizer
     with open('tokenizer.pkl', 'wb') as f:
         pickle.dump(tokenizer, f)
     
@@ -172,7 +172,7 @@ def main():
     print("\nStep 8: Generating text...")
     # Generate some text
     model.eval()
-    prompt = "To be, or not to be"
+    prompt = "Olegg had a dream about the future of AI. In his vision, he saw a world where "
     prompt_ids = tokenizer.encode(prompt)
     input_ids = torch.tensor([prompt_ids], dtype=torch.long).to(device)
     
@@ -191,7 +191,7 @@ def main():
     print("\nTraining complete! Model, optimizer, and tokenizer saved.")
     print(f"Session {current_session['session_number']} completed with final loss: {current_session['final_loss']:.4f}")
     
-    # Reload model from checkpoint to verify
+    # Reload the model from the checkpoint to make sure it works
     final_checkpoint = torch.load('model_checkpoint.pt')
     if isinstance(final_checkpoint, dict) and 'model_state_dict' in final_checkpoint:
         model.load_state_dict(final_checkpoint['model_state_dict'])

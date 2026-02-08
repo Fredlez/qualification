@@ -71,7 +71,7 @@ class TransformerBlock(nn.Module):
         attn_output, attn_weights = self.attention(self.ln1(x))
         x = x + self.dropout(attn_output)
         
-        # Feed-forward with residual connection and layer norm
+        # Feed-forwward with residual connection and layer norm
         ff_output = self.feed_forward(self.ln2(x))
         x = x + self.dropout(ff_output)
         
